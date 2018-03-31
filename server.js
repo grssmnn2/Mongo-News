@@ -13,6 +13,15 @@ var app = express();
 var databaseUrl = "news";
 var collections = ["newsData"];
 
+//if deployed, use deployed database
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+
+// connect to mongoDB
+mongoose.Promise = Promise;
+mongoose.connect(MONGODB_URI, {
+  useMongoClient: true
+});
+
 // Hook mongojs configuration to the db variable
 var db = mongojs(databaseUrl, collections);
 db.on("error", function (error) {
@@ -45,13 +54,16 @@ request("https://www.nytimes.com/", function (error, response, html) {
     // then save the values for any "href" attributes that the child elements may have
     // use this if you want all elements inside of one div
     var link = $(element).children().attr("href");
+    var summary = $(this).children('p.summary').text().trim() + "";
 
     // Save these results in an object that we'll push into the results array we defined earlier
     results.push({
       title: title,
-      link: link
+      link: link,
+      summary: summary
     });
   });
+
 
   // Log the results once you've looped through each of the elements found with cheerio
   db.scrapedData.insert(results);
