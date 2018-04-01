@@ -12,17 +12,16 @@ var app = express();
 var db = require("./models");
 var PORT = 3000;
 // Database configuration
-// databaseurl needs to be the name of your database and also created on your computer
-// var databaseUrl = "news";
-// var collections = ["Article"];
 
 app.use(bodyParser.urlencoded({ extended: false }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
+
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/news", {
+mongoose.connect(MONGODB_URI, {
   useMongoClient: true
 });
 
