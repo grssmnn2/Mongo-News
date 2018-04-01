@@ -25,6 +25,11 @@ mongoose.connect(MONGODB_URI, {
   // useMongoClient: true
 });
 
+// Listen on port 3000
+app.listen(process.env.PORT || 3000, function () {
+  console.log("App running on port 3000!");
+});
+
 // This route will retrieve all of the data
 app.get("/scrape", function (req, res) {
 
@@ -40,10 +45,10 @@ app.get("/scrape", function (req, res) {
       // An empty array to save the data that we'll scrape
       var results = [];
       // store scraped data in appropriate variables
-      results.link = $(element).find("a").attr("href");
-      results.title = $(element).find("a").text().trim();
-      results.summary = $(element).find("p.summary").text().trim();
-      console.log(results);
+          results.link = $(element).find("a").attr("href");
+          results.title = $(element).find("a").text().trim();
+          results.summary = $(element).find("p.summary").text().trim();
+     
 
       // Log the results once you've looped through each of the elements found with cheerio
       db.Article.create(results)
@@ -53,7 +58,7 @@ app.get("/scrape", function (req, res) {
           return res.json(err);
         });
     });
-
+    res.send("You scraped the data successfully.");
   });
 });
 
@@ -130,7 +135,4 @@ app.delete("/articles/:id", function (req, res) {
 });
 
 
-// Listen on port 3000
-app.listen(3000, function () {
-  console.log("App running on port 3000!");
-});
+
