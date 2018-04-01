@@ -22,7 +22,7 @@ var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI, {
-  useMongoClient: true
+  // useMongoClient: true
 });
 
 // This route will retrieve all of the data
@@ -37,31 +37,25 @@ app.get("/scrape", function (req, res) {
     // With cheerio, find each p-tag with the "title" class
     // (i: iterator. element: the current element)
     $("div.collection").each(function (i, element) {
-
-
       // An empty array to save the data that we'll scrape
-      var results = {};
-
-      // Save the text of the element in a "title" variable
-      // this gives back whatever text is being held in the element
+      var results = [];
+      // store scraped data in appropriate variables
       results.link = $(element).find("a").attr("href");
       results.title = $(element).find("a").text().trim();
       results.summary = $(element).find("p.summary").text().trim();
+      console.log(results);
 
       // Log the results once you've looped through each of the elements found with cheerio
-      // if (title && link && summary){
       db.Article.create(results)
         .then(function (dbArticle) {
           console.log(dbArticle);
         }).catch(function (err) {
           return res.json(err);
         });
-      // }
     });
 
   });
 });
-
 
 // Route for getting all Articles from the db
 app.get("/articles", function (req, res) {
