@@ -10,7 +10,7 @@ var cheerio = require("cheerio");
 // Initialize Express
 var app = express();
 var db = require("./models");
-var PORT = 3000;
+var PORT = process.env.PORT || 3000;
 // Database configuration
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -26,8 +26,8 @@ mongoose.connect(MONGODB_URI, {
 });
 
 // Listen on port 3000
-app.listen(process.env.PORT || 3000, function () {
-  console.log("App running on port 3000!");
+app.listen(PORT, function () {
+  console.log("App running on port" + PORT);
 });
 
 // This route will retrieve all of the data
