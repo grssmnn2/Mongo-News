@@ -13,17 +13,8 @@ var db = require("./models");
 var PORT = 3000;
 // Database configuration
 // databaseurl needs to be the name of your database and also created on your computer
-var databaseUrl = "news";
-var collections = ["Article"];
-
-// //if deployed, use deployed database
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/Mongo-News";
-
-// // connect to mongoDB
-mongoose.Promise = Promise;
-mongoose.connect(MONGODB_URI, {
-  // useMongoClient: true
-});
+// var databaseUrl = "news";
+// var collections = ["Article"];
 
 app.use(bodyParser.urlencoded({ extended: false }));
 // Use express.static to serve the public folder as a static directory
@@ -31,7 +22,7 @@ app.use(express.static("public"));
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/Mongo-News", {
+mongoose.connect("mongodb://localhost/news", {
   useMongoClient: true
 });
 
@@ -48,37 +39,28 @@ app.get("/scrape", function (req, res) {
     // (i: iterator. element: the current element)
     $("div.collection").each(function (i, element) {
 
-      
-    // An empty array to save the data that we'll scrape
-    var results = [];
+
+      // An empty array to save the data that we'll scrape
+      var results = {};
 
       // Save the text of the element in a "title" variable
       // this gives back whatever text is being held in the element
-      console.log($(element).text());
-      var link = $(element).find("a").attr("href");
-      var title = $(element).find("a").text().trim();
-      var summary = $(element).find("p.summary").text().trim();
+      results.link = $(element).find("a").attr("href");
+      results.title = $(element).find("a").text().trim();
+      results.summary = $(element).find("p.summary").text().trim();
 
-      // Save these results in an object that we'll push into the results array we defined earlier
-      results.push({
-        title: title,
-        link: link,
-        summary: summary
-      });
-
+      // Log the results once you've looped through each of the elements found with cheerio
+      // if (title && link && summary){
+      db.Article.create(results)
+        .then(function (dbArticle) {
+          console.log(dbArticle);
+        }).catch(function (err) {
+          return res.json(err);
+        });
+      // }
     });
 
-    // Log the results once you've looped through each of the elements found with cheerio
-    // if (title && link && summary){
-    db.Article.create(results)
-    .then(function(dbArticle){
-      console.log(dbArticle);
-    }).catch(function(err){
-      return res.json(err);
-    });
-    // }
   });
-
 });
 
 
@@ -86,11 +68,11 @@ app.get("/scrape", function (req, res) {
 app.get("/articles", function (req, res) {
   // Grab every document in the Articles collection
   db.Article.find({})
-    .then(function(dbArticle) {
+    .then(function (dbArticle) {
       // If we were able to successfully find Articles, send them back to the client
       res.json(dbArticle);
     })
-    .catch(function(err) {
+    .catch(function (err) {
       // If an error occurred, send it to the client
       res.json(err);
     });
