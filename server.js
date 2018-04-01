@@ -21,17 +21,12 @@ var connect = mongoose.connection;
 connect.on('error', console.error.bind(console, 'connection error:'));
 
 
-var MONGODB_URI = process.env.MONGODB_URI;
-var uri = "mongodb://localhost/news";
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
-if (process.env.MONGODB_URI) {
-	mongoose.connect(process.env.MONGODB_URI);
-}
-else {
-	mongoose.connect(uri);
-};
+mongoose.connect(MONGODB_URI);
+
 
 // Listen on port 3000
 app.listen(PORT, function () {
@@ -46,17 +41,18 @@ app.get("/scrape", function (req, res) {
     // Load the HTML into cheerio and save it to a variable
     // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
     var $ = cheerio.load(html);
-    var results = [];
+    var uniqueResults = [];
     // With cheerio, find each p-tag with the "title" class
     // (i: iterator. element: the current element)
     $("div.collection").each(function (i, element) {
       // An empty array to save the data that we'll scrape
-    
+      var results = [];
       // store scraped data in appropriate variables
-          results.link = $(element).find("a").attr("href");
-          results.title = $(element).find("a").text().trim();
-          results.summary = $(element).find("p.summary").text().trim();
         
+          results.link = $(element).find("a").attr("href");
+          results.title = $(element).find("a").text();
+          results.summary = $(element).find("p.summary").text().trim();
+      
 
       // Log the results once you've looped through each of the elements found with cheerio
       db.Article.create(results)
@@ -65,6 +61,7 @@ app.get("/scrape", function (req, res) {
         }).catch(function (err) {
           return res.json(err);
         });
+      
     });
     res.send("You scraped the data successfully.");
   });
@@ -73,7 +70,7 @@ app.get("/scrape", function (req, res) {
 // Route for getting all Articles from the db
 app.get("/articles", function (req, res) {
   // Grab every document in the Articles collection
-  db.Article.find()
+  db.Article.find().sort({id: -1})
     .then(function (dbArticle) {
       // If we were able to successfully find Articles, send them back to the client
       res.json(dbArticle);
