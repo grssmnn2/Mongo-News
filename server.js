@@ -17,13 +17,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
+var MONGODB_URI = process.env.MONGODB_URI;
+var databaseUrl = "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
-mongoose.connect(MONGODB_URI, {
-  // useMongoClient: true
-});
+if (process.env.MONGODB_URI) {
+	mongoose.connect(process.env.MONGODB_URI);
+}
+else {
+	mongoose.connect(databaseUrl);
+};
 
 // Listen on port 3000
 app.listen(PORT, function () {
