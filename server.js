@@ -13,12 +13,16 @@ var db = require("./models");
 var PORT = process.env.PORT || 3000;
 // Database configuration
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
+var connect = mongoose.connection;
+connect.on('error', console.error.bind(console, 'connection error:'));
+
+
 var MONGODB_URI = process.env.MONGODB_URI;
-var databaseUrl = "mongodb://localhost/news";
+var uri = "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
@@ -26,7 +30,7 @@ if (process.env.MONGODB_URI) {
 	mongoose.connect(process.env.MONGODB_URI);
 }
 else {
-	mongoose.connect(databaseUrl);
+	mongoose.connect(uri);
 };
 
 // Listen on port 3000
@@ -42,17 +46,17 @@ app.get("/scrape", function (req, res) {
     // Load the HTML into cheerio and save it to a variable
     // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
     var $ = cheerio.load(html);
-
+    var results = [];
     // With cheerio, find each p-tag with the "title" class
     // (i: iterator. element: the current element)
     $("div.collection").each(function (i, element) {
       // An empty array to save the data that we'll scrape
-      var results = [];
+    
       // store scraped data in appropriate variables
           results.link = $(element).find("a").attr("href");
           results.title = $(element).find("a").text().trim();
           results.summary = $(element).find("p.summary").text().trim();
-     
+        
 
       // Log the results once you've looped through each of the elements found with cheerio
       db.Article.create(results)
@@ -69,7 +73,7 @@ app.get("/scrape", function (req, res) {
 // Route for getting all Articles from the db
 app.get("/articles", function (req, res) {
   // Grab every document in the Articles collection
-  db.Article.find({})
+  db.Article.find()
     .then(function (dbArticle) {
       // If we were able to successfully find Articles, send them back to the client
       res.json(dbArticle);
