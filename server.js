@@ -21,6 +21,9 @@ var MONGODB_URI = process.env.MONGODB_URI;
 var databaseUrl = "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
+var mgdb=mongoose.connection;
+mgdb.on(error,function(err){})
+
 mongoose.Promise = Promise;
 if (process.env.MONGODB_URI) {
 	mongoose.connect(process.env.MONGODB_URI);
