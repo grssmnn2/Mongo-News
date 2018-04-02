@@ -1,5 +1,6 @@
 // Dependencies for server
 var express = require("express");
+var exphbs = require('express-handlebars');
 var mongojs = require("mongojs");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
@@ -16,22 +17,25 @@ var PORT = process.env.PORT || 3000;
 // Database configuration
 app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
-
-var connect = mongoose.connection;
-connect.on('error', console.error.bind(console, 'connection error:'));
-
 
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(MONGODB_URI, {
+
+});
 // mongoose.connect('mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6');
-
-
-
+var mgdb = mongoose.connection;
+mgdb.on("error", function(err) {
+    console.log(err)
+})
+mgdb.once("open", function() {
+  console.log("You are connected.");
+})
 // Listen on port 3000
 app.listen(PORT, function () {
   console.log("App running on port" + PORT);
