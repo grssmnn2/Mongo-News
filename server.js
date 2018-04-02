@@ -13,7 +13,7 @@ var db = require("./models");
 var PORT = process.env.PORT || 3000;
 // Database configuration
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
@@ -25,6 +25,13 @@ var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
+if(process.env.NODE_ENV == 'production'){
+  mongoose.connect('mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6');
+}
+else{
+  mongoose.connect('mongodb://localhost/news');
+}
+
 mongoose.connect(MONGODB_URI);
 
 
@@ -70,7 +77,7 @@ app.get("/scrape", function (req, res) {
 // Route for getting all Articles from the db
 app.get("/articles", function (req, res) {
   // Grab every document in the Articles collection
-  db.Article.find().sort({id: -1})
+  db.Article.find()
     .then(function (dbArticle) {
       // If we were able to successfully find Articles, send them back to the client
       res.json(dbArticle);
