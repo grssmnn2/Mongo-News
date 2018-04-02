@@ -27,7 +27,7 @@ var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
-mongoose.connect(MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI);
 // mongoose.connect('mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6');
 
 
@@ -56,7 +56,6 @@ app.get("/scrape", function (req, res) {
           results.link = $(element).find("a").attr("href");
           results.title = $(element).find("a").text();
           results.summary = $(element).find("p.summary").text().trim();
-      
 
       // Log the results once you've looped through each of the elements found with cheerio
       db.Article.create(results)
@@ -78,7 +77,6 @@ app.get("/articles", function (req, res) {
     .then(function (dbArticle) {
       // If we were able to successfully find Articles, send them back to the client
       res.json(dbArticle);
-      res.send(dbArticle);
     })
     .catch(function (err) {
       // If an error occurred, send it to the client
