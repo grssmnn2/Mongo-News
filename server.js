@@ -3,6 +3,7 @@ var express = require("express");
 var mongojs = require("mongojs");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
+var logger = require("morgan");
 // Require request and cheerio for actual web scraping
 var request = require("request");
 var cheerio = require("cheerio");
@@ -10,10 +11,11 @@ var cheerio = require("cheerio");
 // Initialize Express
 var app = express();
 var db = require("./models");
+
 var PORT = process.env.PORT || 3000;
 // Database configuration
-
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(logger('dev'));
+app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
@@ -25,14 +27,9 @@ var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 
 // Hook mongojs configuration to the db variable
 mongoose.Promise = Promise;
-if(process.env.NODE_ENV == 'production'){
-  mongoose.connect('mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6');
-}
-else{
-  mongoose.connect('mongodb://localhost/news');
-}
-
 mongoose.connect(MONGODB_URI);
+// mongoose.connect('mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6');
+
 
 
 // Listen on port 3000
