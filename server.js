@@ -1,10 +1,9 @@
 // Dependencies for server
 var express = require("express");
 var exphbs = require('express-handlebars');
-var mongojs = require("mongojs");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
-var logger = require("morgan");
+
 // Require request and cheerio for actual web scraping
 var request = require("request");
 var cheerio = require("cheerio");
@@ -14,23 +13,36 @@ var db = require("./models");
 // Initialize Express
 var app = express();
 var PORT = process.env.PORT || 3000;
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news" || 'mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6';
-
-// body parser
-app.use(logger('dev'));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-// Use express.static to serve the public folder as a static directory
-app.use(express.static("public"));
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 
 // connect to database
 mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI, {});
 
+var moncon = mongoose.connection;
+
+moncon.on('error', function(err){
+  console.log("Mongoose Error: ", err);
+});
+moncon.once('open', function(){
+  console.log("Mongoose successful.");
+});
+
+// body parser
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// Use express.static to serve the public folder as a static directory
+app.use(express.static("public"));
+
+// Express-Handlebars
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
 // Listen on port 3000
 app.listen(PORT, function () {
   console.log("App running on port" + PORT);
 });
+
 
 // This route will retrieve all of the data
 app.get("/scrape", function (req, res) {
