@@ -14,7 +14,7 @@ var db = require("./models");
 // Initialize Express
 var app = express();
 var PORT = process.env.PORT || 3000;
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news" || 'mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6';
 
 // body parser
 app.use(logger('dev'));
@@ -26,7 +26,6 @@ app.use(express.static("public"));
 // connect to database
 mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI, {});
-// mongoose.connect('mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6');
 
 // Listen on port 3000
 app.listen(PORT, function () {
