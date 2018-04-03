@@ -9,33 +9,25 @@ var logger = require("morgan");
 var request = require("request");
 var cheerio = require("cheerio");
 
-// Initialize Express
-var app = express();
 var db = require("./models");
 
+// Initialize Express
+var app = express();
 var PORT = process.env.PORT || 3000;
-// Database configuration
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
+
+// body parser
 app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
-
-// Hook mongojs configuration to the db variable
+// connect to database
 mongoose.Promise = Promise;
-mongoose.connect(MONGODB_URI, {
-
-});
+mongoose.connect(MONGODB_URI, {});
 // mongoose.connect('mongodb://heroku_dcsd78d6:o1bbdlcqecisc385g24ljadpc5@ds127139.mlab.com:27139/heroku_dcsd78d6');
-var mgdb = mongoose.connection;
-mgdb.on("error", function(err) {
-    console.log(err)
-})
-mgdb.once("open", function() {
-  console.log("You are connected.");
-})
+
 // Listen on port 3000
 app.listen(PORT, function () {
   console.log("App running on port" + PORT);
@@ -48,27 +40,23 @@ app.get("/scrape", function (req, res) {
 
     // Load the HTML into cheerio and save it to a variable
     // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
-    var $ = cheerio.load(html);
-    var uniqueResults = [];
-    // With cheerio, find each p-tag with the "title" class
-    // (i: iterator. element: the current element)
-    $("div.collection").each(function (i, element) {
-      // An empty array to save the data that we'll scrape
+    request('https://www.nytimes.com', (err, response, html) => {
+      var $ = cheerio.load(html);
       var results = [];
-      // store scraped data in appropriate variables
-        
-          results.link = $(element).find("a").attr("href");
-          results.title = $(element).find("a").text();
-          results.summary = $(element).find("p.summary").text().trim();
-
-      // Log the results once you've looped through each of the elements found with cheerio
+      $("div.collection").each(function (i, element) {
+        var ob = {};
+        ob.link = $(element).find("a").attr("href");
+        ob.title = $(element).find("a").text();
+        ob.summary = $(element).find("p.summary").text().trim();
+        results.push(ob);
+      });
+    
       db.Article.create(results)
-        .then(function (dbArticle) {
-          console.log(dbArticle);
+        .then(function (dbArticles) {
+          res.json(dbArticles);
         }).catch(function (err) {
           return res.json(err);
         });
-      
     });
     res.send("You scraped the data successfully.");
   });

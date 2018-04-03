@@ -1,9 +1,12 @@
 // Grab the articles as a json
 $.getJSON("/articles", function (data) {
     // For each one
+    console.log(data);
+ 
     for (var i = 0; i < data.length; i++) {
         // Display the apropos information on the page
         if (data[i].title !== null && data[i].title !== "" && data[i].title.length !== 0 && data[i].summary !== null && data[i].summary !== "" && data[i].summary.trim().length !== 0) {
+                
             $("#articles").append("<p data-id='" + data[i]._id + "'>" + "Title: " + "<br />" + data[i].title + "<br />" + "Link: " + "<br />" + data[i].link + "<br />" + "Summary: " + "<br />" + data[i].summary + "</p>");
         }
     }
