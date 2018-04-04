@@ -58,7 +58,8 @@ app.get("/scrape", function (req, res) {
         ob.summary = $(element).find("p.summary").text().trim();
         results.push(ob);
       });
-    
+      // console.log(results);
+      // use a create to send the data into mongodb
       db.Article.create(results)
         .then(function (dbArticles) {
           res.json(dbArticles);
