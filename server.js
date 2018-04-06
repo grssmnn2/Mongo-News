@@ -19,18 +19,10 @@ var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news";
 mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI, {});
 
-var moncon = mongoose.connection;
-
-moncon.on('error', function(err){
-  console.log("Mongoose Error: ", err);
-});
-moncon.once('open', function(){
-  console.log("Mongoose successful.");
-});
-
 // body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
@@ -38,45 +30,58 @@ app.use(express.static("public"));
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
+// var router = express.Router();
+// app.use(router);
+
 // Listen on port 3000
 app.listen(PORT, function () {
   console.log("App running on port" + PORT);
 });
 
+// render index handlebars page when we go to /nyt route
+app.get("/", function(req, res){
+    res.render("index");
+})
 
-// This route will retrieve all of the data
+// first go to /scrape to obtain data
 app.get("/scrape", function (req, res) {
-   // Load the HTML into cheerio and save it to a variable
-    // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
+// request data from nyt website
     request('https://www.nytimes.com', (err, response, html) => {
+      // load html into cheerio and $ variable
       var $ = cheerio.load(html);
       var results = [];
+      // access a repeating element with information we need
       $("div.collection").each(function (i, element) {
         var ob = {};
+        // store link, title, and summary and push into an object
         ob.link = $(element).find("a").attr("href");
         ob.title = $(element).find("a").text();
         ob.summary = $(element).find("p.summary").text().trim();
+        // push that object into the results array
         results.push(ob);
       });
-      // console.log(results);
       // use a create to send the data into mongodb
       db.Article.create(results)
         .then(function (dbArticles) {
+          // give that data back to the user
           res.json(dbArticles);
         }).catch(function (err) {
+          // if error let us know
           return res.json(err);
         });
     });
+    // if successful, say so when accessing /scrape
     res.send("You scraped the data successfully.");
+    // res.redirect("/");
   });
 
 
-// Route for getting all Articles from the db
+// find all articles when accessing /articles
 app.get("/articles", function (req, res) {
   // Grab every document in the Articles collection
   db.Article.find()
     .then(function (dbArticle) {
-      // If we were able to successfully find Articles, send them back to the client
+      // send back data to client
       res.json(dbArticle);
     })
     .catch(function (err) {
